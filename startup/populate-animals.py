@@ -3,6 +3,7 @@ import requests
 import time
 
 def already_seeded():
+    time.sleep(10)
     response = requests.get('http://api:5000/animals')
     data = response.json()
     if len(data) > 199 and response.status_code == 200:
@@ -23,6 +24,6 @@ else:
                 'habitat': animal[3]
             })
             print(f'status: {response.status_code}')
-            time.sleep(.5)
+            
             
 

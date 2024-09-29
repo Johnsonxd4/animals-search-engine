@@ -8,3 +8,7 @@ class ElasticSearchDatabase:
         resp = self.client.index(index="animals", id=animal['id'], document=animal)
         print(resp['result'])
         print(f'animal {animal} created on elastic search')
+
+    def update_animal(self,animal):
+        
+        print(f'Chamou o update correto !!!!!!!!!!!!!!')

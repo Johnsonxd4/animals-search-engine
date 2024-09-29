@@ -7,6 +7,15 @@ services:
     depends_on:
       animals-api:
         condition: service_healthy
+    
+  animals-updates-loop:
+    build: ./load-simulator
+    links:
+      - "animals-api:api"
+    depends_on:
+      animals-api:
+        condition: service_healthy
+      
 
   #containers
   animals-api:
@@ -47,9 +56,10 @@ services:
       - "elasticsearch:elasticsearch"
     
     depends_on:
-      - "animals-seed"
+      - animals-seed
       - rabbitmq
       - elasticsearch
+      - animals-api
     environment:
       PYTHONUNBUFFERED: 1 
       ELASTICSEARCH_HOST: elasticsearch
