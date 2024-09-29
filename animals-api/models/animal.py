@@ -19,7 +19,7 @@ class Animal(db.Model):
         self.category = category
         self.habitat = habitat
 
-    def __json__(self):
+    def to_json(self):
         return json.dumps({
             'id': self.id,
             'name': self.name,

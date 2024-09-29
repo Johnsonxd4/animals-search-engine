@@ -6,3 +6,4 @@ startup/env/**
 ingestion/broker/__pycache__/** 
 ingestion/ingestion-env/**
 ingestion/__pycache__/**
+animals-api/broker/__pycache__/**

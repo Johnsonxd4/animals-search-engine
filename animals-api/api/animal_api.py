@@ -2,6 +2,9 @@ from flask import Blueprint, request, jsonify
 from models.animal import Animal, db
 from broker.message_sender import BasicMessageSender
 from config import Config
+import logging
+
+LOGGER = logging.getLogger('animals_api')
 animal_blueprint = Blueprint('user_api', __name__)
 
 @animal_blueprint.route('/healthcheck',methods=['GET'])
@@ -37,6 +40,8 @@ def get_animal(id):
         description: A animal correpoding the provided id
         schema:
           $ref: '#/definitions/Animal'
+      404:
+        description: Animal not found
     """
     animal = Animal.query.get(id)
 
@@ -93,10 +98,46 @@ def list_animals():
 
 @animal_blueprint.route('/animals', methods=['POST'])
 def post_animal():
-    """inserts a new animal animals list 
+    """Create a new animal
     ---
-    description: Post a animal
+    parameters:
+      - name: body
+        in: body
+        required: true
+        schema:
+          type: object
+          properties:
+            name:
+              type: string
+              example: "Leo"
+            specie:
+              type: string
+              example: "Lion"
+            category:
+              type: string
+              example: "Mammal"
+            habitat:
+              type: string
+              example: "Savanna"
+    responses:
+      201:
+        description: Animal created successfully
+        schema:
+          type: object
+          properties:
+            message:
+              type: string
+              example: "Animal Leo created successfully"
+      400:
+        description: Bad request
+        schema:
+          type: object
+          properties:
+            error:
+              type: string
+              example: "Error message describing what went wrong"
     """
+    
     data = request.get_json()
     name = data.get('name')
     specie = data.get('specie'),
@@ -111,9 +152,110 @@ def post_animal():
         db.session.commit()
         sender = BasicMessageSender(Config.BROKER_HOST,Config.BROKER_USERNAME,Config.BROKER_PASSWORD)
         sender.declare_queue('animal_created')
-        sender.send_message(exchange='',routing_key="animal_created",body=animal.__json__())
+        sender.send_message(exchange='',routing_key="animal_created",body=animal.to_json())
         return jsonify({'message': f"Animal {animal.name} created successfully"}), 201
     except Exception as e:
         db.session.rollback()
+        LOGGER.error(e)
+        return jsonify({'error': str(e)}), 400
+
+
+
+@animal_blueprint.route('/animals/<int:id>', methods=['PUT'])
+def put_animal(id: int):
+    """ Updates an existing animal
+    ---
+    parameters:
+      - name: id
+        in: path
+        type: integer
+        required: true
+        description: ID of the animal to update
+
+      - name: body
+        in: body
+        required: true
+        schema:
+          type: object
+          properties:
+            name:
+              type: string
+              example: "Leo"
+            specie:
+              type: string
+              example: "Lion"
+            category:
+              type: string
+              example: "Mammal"
+            habitat:
+              type: string
+              example: "Savanna"
+    responses:
+      200:
+        description: Animal updated successfully
+        schema:
+          type: object
+          properties:
+            message:
+              type: string
+              example: "Animal updated successfully"
+            animal:
+              type: object
+              properties:
+                id:
+                  type: integer
+                  example: 1
+                name:
+                  type: string
+                  example: "Leo"
+                specie:
+                  type: string
+                  example: "Lion"
+                category:
+                  type: string
+                  example: "Mammal"
+                habitat:
+                  type: string
+                  example: "Savanna"
+      400:
+        description: Bad request
+        schema:
+          type: object
+          properties:
+            error:
+              type: string
+              example: "Error message describing what went wrong"
+      404:
+        description: Animal not found
+        schema:
+          type: object
+          properties:
+            error:
+              type: string
+              example: "Animal not found"
+    """
+
+    data = request.get_json()
+    name: String = data.get('name')
+    specie: String = data.get('specie'),
+    category: String = data.get('category'),
+    habitat: String  = data.get('habitat')
+
+    animal: Animal = db.session.query(Animal).get(id)
+    if not animal:
+        return jsonify({'error': 'Animal not found'}), 404
+    
+    animal.name = name
+    animal.specie = specie
+    animal.category = category
+    animal.habitat = habitat
+    try:
+        db.session.commit()
+        sender = BasicMessageSender(Config.BROKER_HOST,Config.BROKER_USERNAME,Config.BROKER_PASSWORD)
+        sender.declare_queue('animal_updated')
+        sender.send_message(exchange='',routing_key="animal_updated",body=animal.to_json())
+        return jsonify(animal.to_json()), 200
+    except Exception as e:
+        db.session.rollback()
         print(e)
-        return jsonify({'error': str(e)}), 500
+        return jsonify({'error': str(e)}), 400
