@@ -1,6 +1,7 @@
 import pika
 import logging
 import time
+import json
 
 class BasicMessageReceiver(object):
     def __init__(self, rabbitmq_broker, rabbitmq_user, rabbitmq_password ,callback, queue_name):
@@ -30,8 +31,9 @@ class BasicMessageReceiver(object):
 
     def on_message(self, unused_channel, basic_deliver, properties, body):
         try:
-            print(f'consuming message: {body}'
-            self.callback(body)
+            print(f'consuming message: {body}')
+            message = json.loads(body)
+            self.callback(message)
             self.acknowledge_message(basic_deliver.delivery_tag)
         except Exception as e:
             print(e)

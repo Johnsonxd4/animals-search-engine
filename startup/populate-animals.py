@@ -23,6 +23,6 @@ else:
                 'habitat': animal[3]
             })
             print(f'status: {response.status_code}')
-            time.sleep(5)
+            time.sleep(.5)
             
 
