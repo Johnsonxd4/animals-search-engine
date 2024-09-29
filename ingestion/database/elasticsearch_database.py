@@ -10,5 +10,6 @@ class ElasticSearchDatabase:
         print(f'animal {animal} created on elastic search')
 
     def update_animal(self,animal):
-        
+        resp = self.client.update(index="animals", id=animal['id'], doc=animal)
+        print(resp['result'])
         print(f'Chamou o update correto !!!!!!!!!!!!!!')
