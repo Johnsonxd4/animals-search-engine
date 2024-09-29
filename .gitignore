@@ -3,3 +3,6 @@ animals-api/animals-api-env/**
 animals-api/api/__pycache__/**
 animals-api/models/__pycache__/**
 startup/env/**
+ingestion/broker/__pycache__/** 
+ingestion/ingestion-env/**
+ingestion/__pycache__/**

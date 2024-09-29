@@ -1,5 +1,6 @@
 import csv 
 import requests 
+import time
 
 def already_seeded():
     response = requests.get('http://api:5000/animals')
@@ -22,4 +23,6 @@ else:
                 'habitat': animal[3]
             })
             print(f'status: {response.status_code}')
+            time.sleep(5)
+            
 
