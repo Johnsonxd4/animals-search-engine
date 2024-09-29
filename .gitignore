@@ -1,0 +1,5 @@
+animals-api/__pycache__/**
+animals-api/animals-api-env/**
+animals-api/api/__pycache__/**
+animals-api/models/__pycache__/**
+startup/env/**
